@@ -1,0 +1,44 @@
+version: '3'
+services:
+  database:
+    image: postgres
+    environment:
+      POSTGRES_MULTIPLE_DATABASES: elasticsearch_rails_development,elasticsearch_rails_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: d3v3l0p123
+    ports:
+      - 5432:5432
+    volumes:
+      - ./config/docker/database/create-multiple-postgresql-databases.sh:/docker-entrypoint-initdb.d/create-multiple-postgresql-databases.sh
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.0.0
+    environment:
+      - cluster.name=rails_tutorial
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.monitoring.enabled=false
+      - xpack.graph.enabled=false
+      - xpack.watcher.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - 9200:9200
+      - 9300:9300
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+
+  kibana:
+    image: kibana:7.0.0
+    ports:
+      - 5601:5601
+    environment:
+      - "ELASTICSEARCH_URL=http://elasticsearch:9200"
+    depends_on:
+      - elasticsearch
+
+volumes:
+  esdata1:
+    driver: local
+  postgres-data:
